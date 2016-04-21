@@ -3,6 +3,7 @@ package org.jointheleague.iaroc;
 import android.os.SystemClock;
 
 import ioio.lib.api.IOIO;
+import ioio.lib.api.Uart;
 import ioio.lib.api.exception.ConnectionLostException;
 import org.wintrisstech.irobot.ioio.IRobotCreateAdapter;
 import org.wintrisstech.irobot.ioio.IRobotCreateInterface;
@@ -23,7 +24,8 @@ public class Brain extends IRobotCreateAdapter {
         int tAngle = 0;
     }
 
-    //int distance;
+    int distance;
+    int angle;
 
     //boolean active = true;
 
@@ -31,7 +33,53 @@ public class Brain extends IRobotCreateAdapter {
 
     /* This method is executed when the robot first starts up. */
     public void initialize() throws ConnectionLostException {
-        dashboard.log("Hello! I'm a Clever Robot!");
+        dashboard.log("Self Destruct In T Minus 10 Seconds");
+
+
+
+        /*for(int i = 1; i < 5; i++)
+        {
+            record("Round: " + i);
+            straightForward(500 - randomizer.nextInt(1000), randomizer.nextInt(500));
+            readSensors(SENSORS_DISTANCE);
+            distance = distance + getDistance();
+            record("Moved distance: " + getDistance());
+            record("Total distance: " + distance);
+
+            stop();
+            SystemClock.sleep(500);
+
+            turnClockwise(500 - randomizer.nextInt(1000), randomizer.nextInt(500));
+            readSensors(SENSORS_ANGLE);
+            angle = angle + getAngle();
+            record("Moved angle: " + getAngle());
+            record("Total angle: " + angle);
+
+            stop();
+            SystemClock.sleep(500);
+        }
+        stop();
+        dashboard.speak("Done!");
+        record("Total distance: " + distance);
+        record("Total angle: " + angle);*/
+
+        /* //Read test
+        straightForward(500, 1000);
+        readSensors(SENSORS_DISTANCE);
+        dashboard.log("Moved forward: " + getDistance());
+        turnClockwise(500, 1000);
+        readSensors(SENSORS_ANGLE);
+        dashboard.log("Turned clockwise: " + getAngle());
+
+        straightForward(-500, 1000);
+        readSensors(SENSORS_DISTANCE);
+        dashboard.log("Moved backward: " + getDistance());
+        turnClockwise(-500, 1000);
+        readSensors(SENSORS_ANGLE);
+        dashboard.log("Turned counterclockwise: " + getAngle());
+
+        stop();*/
+
         //what would you like me to do, Clever Human?
         /*
         dashboard.speak("BEEP");
@@ -57,7 +105,7 @@ public class Brain extends IRobotCreateAdapter {
         dashboard.log("Total distance = " + perimeter);
         */
 
-        dashboard.speak("Error! Error!");
+        /*dashboard.speak("Error! Error!");
 
         for(int i = 0; i < 50; i++){
             int random = randomizer.nextInt(3);
@@ -73,12 +121,41 @@ public class Brain extends IRobotCreateAdapter {
             }
         }
 
-        stop();
+        stop();*/
 
 
     }
     /* This method is called repeatedly. */
     public void loop() throws ConnectionLostException {
+
+        readSensors(SENSORS_BUMPS_AND_WHEEL_DROPS);
+        //Directly into the wall
+        if(isBumpLeft() && isBumpRight())
+        {
+            turningForward(250, -100, 100);
+            dashboard.log("Turning right...");
+        }
+        //Hugging the left wall
+        else if(isBumpLeft() && !isBumpRight())
+        {
+            turningForward(225, 250, 100);
+            dashboard.log("Pushing left...");
+        }
+        //Look for the left wall
+        else
+        {
+            turningForward(50, 250, 100);
+            dashboard.log("Looking for wall...");
+        }
+        /* //Bump and back up
+        straightForward(100, 100);
+        readSensors(SENSORS_BUMPS_AND_WHEEL_DROPS);
+        if(isBumpLeft() && isBumpRight())
+        {
+            dashboard.log("Backing up...");
+            straightForward(-500, 1000);
+        }*/
+
         /*readSensors(SENSORS_DISTANCE);
         distance = distance + getDistance();
 
@@ -102,7 +179,7 @@ public class Brain extends IRobotCreateAdapter {
         }*/
     }
     public void turningForward(int left, int right, int time) throws  ConnectionLostException {
-        driveDirect(left, right);
+        driveDirect(right, left);
         SystemClock.sleep(time);
     }
 
@@ -118,5 +195,10 @@ public class Brain extends IRobotCreateAdapter {
 
     public void stop() throws ConnectionLostException{
         driveDirect(0, 0);
+    }
+
+    public void record(String message) throws ConnectionLostException{
+        dashboard.log(message);
+        //dashboard.speak(message);
     }
 }
